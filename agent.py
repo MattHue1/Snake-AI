@@ -70,13 +70,31 @@ class Agent:
         self.memory.append((state, direction, reward, next_state, over)) #pop first when max memory reached
     
     def train_long_memory(self):
-        pass
+        if len(self.memory) > BATCH_SIZE:
+            mini_sample = random.sample(self.memory, BATCH_SIZE)
+        else:
+            mini_sample = self.memory
+        
+        states, actions, rewards, next_states, over = zip(*mini_sample)
+        self.trainer.train_step(states, actions, rewards, next_states, over)
     
     def train_short_memory(self, state, direction, reward, next_state, over):
-        pass
+        self.trainer.train_step(state, direction, reward, next_state, over)
     
     def get_action(self, state):
-        pass
+        # random
+        self.epsilon = 80 - self.n_games
+        final_move = [0,0,0]
+        if random.randint(0,200) < self.epsilon:
+            move = random.randint(0,2)
+            final_move[move] = 1
+        else:
+            state0 = torch.tensor(state, dtype=torch.float)
+            prediction = self.trainer.model.predict(state0)
+            move = torch.argmax(prediction).item()
+            final_move[move] = 1
+        
+        return final_move
     
 def train():
     plot_scores = []
