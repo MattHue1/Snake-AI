@@ -14,9 +14,10 @@ class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0
-        self.gamma = 0
+        self.gamma = 0.85
         self.memory = deque(maxlen=MAX_MEMORY)
-        # do model and trainer
+        self.model = Linear_QNet(11, 256, 3)
+        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
         
 
     def get_state(self, game):
@@ -90,7 +91,7 @@ class Agent:
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)
-            prediction = self.trainer.model.predict(state0)
+            prediction = self.model(state0)
             move = torch.argmax(prediction).item()
             final_move[move] = 1
         
